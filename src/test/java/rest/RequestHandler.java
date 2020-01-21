@@ -1,25 +1,19 @@
 package rest;
 
-import com.sun.jmx.snmp.Timestamp;
-import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
-import io.restassured.http.Method;
-import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import org.apache.http.HttpStatus;
 import utility.ConfigReader;
-import java.util.ResourceBundle;
-import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 
 public class RequestHandler {
 
-    public static ConfigReader config;
+    private static ConfigReader config;
+    private String accessToken;
 
-    protected RequestSpecification getRequestSpecification() {
+    private RequestSpecification getRequestSpecification() {
         return new RequestSpecBuilder().
                 setBaseUri("https://graph.facebook.com").
                 addHeader("Content-Type", "application/json").
@@ -27,7 +21,7 @@ public class RequestHandler {
                 build();
     }
 
-    public RequestUserAccessToken getUserAccessToken() {
+    private RequestUserAccessToken getUserAccessToken() {
         return given(getRequestSpecification()).
                 param(config.AppToken()).
                 get("/" + config.AppID()).
@@ -35,33 +29,64 @@ public class RequestHandler {
                 statusCode(HttpStatus.SC_OK).extract().as(RequestUserAccessToken.class);
     }
 
-    public RequestPageAccessToken getPageAccessToken(Map<String, String> parameters) {
+    private RequestPageAccessToken getPageAccessToken() {
+
+        RequestUserAccessToken requestUserAccessToken = getUserAccessToken();
+
+        for (Datum data : requestUserAccessToken.getData()) {
+            accessToken = data.getAccessToken();
+//            break;
+        }
+
         return given(getRequestSpecification()).
-                params(parameters).
+                param("access_token", accessToken).
                 get("/" + config.UserID()).
                 then().log().body().
                 statusCode(HttpStatus.SC_OK).extract().as(RequestPageAccessToken.class);
     }
 
-    public CreatePostResponse postMessage(Map<String, String> parameters) {
+    public CreatePostResponse postMessage(String message) {
+
+        RequestPageAccessToken requestPageAccessToken = getPageAccessToken();
+
+        for (Datum data : requestPageAccessToken.getData()) {
+            accessToken = data.getAccessToken();
+        }
+
         return given(getRequestSpecification()).
-                params(parameters).
+                param("access_token", accessToken).
+                param("message", message).
                 post("/" + config.PageID() + "/feed").
                 then().log().body().
                 statusCode(HttpStatus.SC_OK).extract().as(CreatePostResponse.class);
     }
 
-    public UpdatePostResponse updateMessage(Map<String, String> parameters, String messageId) {
+    public UpdatePostResponse updateMessage(String message, String messageId) {
+
+        RequestPageAccessToken requestPageAccessToken = getPageAccessToken();
+
+        for (Datum data : requestPageAccessToken.getData()) {
+            accessToken = data.getAccessToken();
+        }
+
         return given(getRequestSpecification()).
-                params(parameters).
+                param("access_token", accessToken).
+                param("message", message).
                 post("/" + messageId).
                 then().log().body().
                 statusCode(HttpStatus.SC_OK).extract().as(UpdatePostResponse.class);
     }
 
-    public UpdatePostResponse deleteMessage(Map<String, String> parameters, String messageId) {
+    public UpdatePostResponse deleteMessage(String messageId) {
+
+        RequestPageAccessToken requestPageAccessToken = getPageAccessToken();
+
+        for (Datum data : requestPageAccessToken.getData()) {
+            accessToken = data.getAccessToken();
+        }
+
         return given(getRequestSpecification()).
-                params(parameters).
+                param("access_token", accessToken).
                 delete("/" + messageId).
                 then().log().body().
                 statusCode(HttpStatus.SC_OK).extract().as(UpdatePostResponse.class);

@@ -8,7 +8,7 @@ public class RequestUserAccessToken {
 
     @SerializedName("data")
     @Expose
-    public List<Datum> data = null;
+    private List<Datum> data = null;
     @SerializedName("paging")
     @Expose
     private Paging paging;

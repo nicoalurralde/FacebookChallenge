@@ -5,7 +5,7 @@ import java.io.FileInputStream;
 import java.util.Properties;
 
 public class ConfigReader {
-    Properties pro;
+    private Properties pro;
     public ConfigReader()
     {
         try {
@@ -19,8 +19,7 @@ public class ConfigReader {
     }
     public String getChromePath()
     {
-        String path = pro.getProperty("ChromeDriver");
-        return path;
+        return pro.getProperty("ChromeDriver");
     }
 
     public String URL() { return pro.getProperty("URL"); }
