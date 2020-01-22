@@ -1,6 +1,10 @@
 package test;
 
 import model.PagePost;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 import org.testng.annotations.*;
 import org.openqa.selenium.WebDriver;
@@ -20,7 +24,7 @@ public class FacebookPostVerification extends RequestHandler {
     private long timeStamp;
 
     @BeforeTest
-    public void openBrowser() throws IOException {
+    public void openBrowser() {
 
         config = new ConfigReader();
 
@@ -33,20 +37,13 @@ public class FacebookPostVerification extends RequestHandler {
         driver = new ChromeDriver(options);
     }
 
-    @Test
-    public void login() throws InterruptedException {
-
-        timeStamp = System.currentTimeMillis();
-        RequestHandler requestHandler = new RequestHandler();
-        CreatePostResponse createPostResponse = requestHandler.postMessage("FIRST POST " + timeStamp);
-        messageId = String.valueOf(createPostResponse.id);
+    @Test(priority=1)
+    public void login(){
 
         driver.get(config.URL());
 
         LoginPage.input_email(driver).sendKeys(config.Username());
-
         LoginPage.input_password(driver).sendKeys(config.Password());
-
         LoginPage.btn_login(driver).click();
 
         String webTitle = driver.getTitle();
@@ -55,8 +52,29 @@ public class FacebookPostVerification extends RequestHandler {
 
     }
 
-    @Test
-    public void readPost() throws InterruptedException {
+    @Test(priority=2)
+    public void createPostAPI(){
+
+        timeStamp = System.currentTimeMillis();
+
+        RequestHandler requestHandler = new RequestHandler();
+
+        CreatePostResponse createPostResponse = requestHandler.postMessage("FIRST POST " + timeStamp);
+
+        System.out.println("Creating message with text: " + "FIRST POST " + timeStamp);
+
+        messageId = String.valueOf(createPostResponse.id);
+
+    }
+
+    @Test(priority=3)
+    public void createPostUI(){
+
+        driver.navigate().refresh();
+
+        WebDriverWait wait = new WebDriverWait(driver, 20);
+
+        WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("profileLink")));
 
         String postMessage = PagePost.message(driver).getText();
         String postDate = PagePost.date(driver).getText();
@@ -64,48 +82,79 @@ public class FacebookPostVerification extends RequestHandler {
 
         Assert.assertEquals(postMessage, "FIRST POST " + timeStamp, "Post message should be the same I sent");
         Assert.assertEquals(postDate, "Just now", "Time of post should be just now");
-        Assert.assertEquals(postMessage, config.PageName(), "Post author should be as configuration");
+        Assert.assertEquals(postAuthor, config.PageName(), "Post author should be as configuration");
 
     }
 
-    @Test
-    public void updatePostTest() throws InterruptedException {
+    @Test(priority=4)
+    public void updatePostAPI(){
 
         timeStamp = System.currentTimeMillis();
+
         RequestHandler requestHandler = new RequestHandler();
+
         UpdatePostResponse updatePost = requestHandler.updateMessage("UPDATED POST " + timeStamp, messageId);
+
+        System.out.println("Updating message to text: " + "FIRST POST " + timeStamp);
+
+    }
+
+    @Test(priority=5)
+    public void updatePostUI(){
+
+        driver.navigate().refresh();
+
+        WebDriverWait wait = new WebDriverWait(driver, 20);
+
+        WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("profileLink")));
 
         String postMessage = PagePost.message(driver).getText();
         String postAuthor = PagePost.author(driver).getText();
 
-        driver.navigate().refresh();
-
         Assert.assertEquals(postMessage, "UPDATED POST " + timeStamp, "Post message should be the same I sent");
-        Assert.assertEquals(postMessage, config.PageName(), "Post author should be as configuration");
+        Assert.assertEquals(postAuthor, config.PageName(), "Post author should be as configuration");
 
     }
 
-    @Test
-    public void deletePostTest() throws InterruptedException {
+    @Test(priority=6)
+    public void deletePostAPI(){
 
         RequestHandler requestHandler = new RequestHandler();
 
         UpdatePostResponse deletePost = requestHandler.deleteMessage(messageId);
 
-        String postMessage = PagePost.message(driver).getText();
-        String postAuthor = PagePost.author(driver).getText();
+    }
+
+    @Test(priority=7)
+    public void deletePostUI(){
 
         driver.navigate().refresh();
 
-        Assert.assertEquals(postMessage, "UPDATED POST " + timeStamp, "Post message should be the same I sent");
-        Assert.assertEquals(postMessage, config.PageName(), "Post author should be as configuration");
+        WebDriverWait wait = new WebDriverWait(driver, 20);
+
+        WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("pagelet_timeline_main_column")));
+
+        String postMessage = PagePost.message(driver).getText();
+        String postAuthor = PagePost.author(driver).getText();
+
+        if (postMessage != null) {
+
+            Assert.assertNotEquals(postMessage, "UPDATED POST " + timeStamp, "Message was not deleted");
+
+        } else {
+
+            Assert.assertNull(postMessage, "Message was not deleted");
+
+        }
 
     }
 
     @AfterClass
     public void theEnd(){
+
         driver.close();
         driver.quit();
+
     }
 
 }

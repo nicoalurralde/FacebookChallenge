@@ -14,19 +14,19 @@ public class PagePost {
     }
 
     public static WebElement author(WebDriver driver){
-        element = driver.findElement(By.id("account_logout"));
+        element = driver.findElement(By.className("profileLink"));
         return element;
     }
 
     public static WebElement image(WebDriver driver){
-        element = driver.findElement(By.id("account_logout"));
+        element = driver.findElement(By.className("uiScaledImageContainer"));
         return element;
     }
 
-    public static WebElement avatar(WebDriver driver){
-        element = driver.findElement(By.id("account_logout"));
-        return element;
-    }
+//    public static WebElement avatar(WebDriver driver){
+//        element = driver.findElement(By.id("account_logout"));
+//        return element;
+//    }
 
     public static WebElement message(WebDriver driver){
         element = driver.findElement(By.xpath("//div[@data-testid='post_message']"));
@@ -45,6 +45,11 @@ public class PagePost {
 
     public static WebElement chat_close(WebDriver driver){
         element = driver.findElement(By.className("close"));
+        return element;
+    }
+
+    public static WebElement postsWall(WebDriver driver){
+        element = driver.findElement(By.id("pagelet_timeline_main_column"));
         return element;
     }
 }
