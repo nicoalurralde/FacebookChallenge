@@ -1,13 +1,11 @@
 package test;
 
 import model.PagePost;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import model.LoginPage;
@@ -22,6 +20,7 @@ public class FacebookPostVerification extends RequestHandler {
     private String messageId;
     private String accessToken;
     private long timeStamp;
+    private int defaultTimeout = 60;
 
     @BeforeTest
     public void openBrowser() {
@@ -72,7 +71,7 @@ public class FacebookPostVerification extends RequestHandler {
 
         driver.navigate().refresh();
 
-        WebDriverWait wait = new WebDriverWait(driver, 20);
+        WebDriverWait wait = new WebDriverWait(driver, defaultTimeout);
 
         WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("profileLink")));
 
@@ -104,7 +103,7 @@ public class FacebookPostVerification extends RequestHandler {
 
         driver.navigate().refresh();
 
-        WebDriverWait wait = new WebDriverWait(driver, 20);
+        WebDriverWait wait = new WebDriverWait(driver, defaultTimeout);
 
         WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("profileLink")));
 
@@ -130,12 +129,17 @@ public class FacebookPostVerification extends RequestHandler {
 
         driver.navigate().refresh();
 
-        WebDriverWait wait = new WebDriverWait(driver, 20);
+        WebDriverWait wait = new WebDriverWait(driver, defaultTimeout);
 
         WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("pagelet_timeline_main_column")));
 
-        String postMessage = PagePost.message(driver).getText();
-        String postAuthor = PagePost.author(driver).getText();
+        String postMessage = null;
+
+        try {
+            postMessage = PagePost.message(driver).getText();
+        }
+            catch (NoSuchElementException ignored) {
+        }
 
         if (postMessage != null) {
 
