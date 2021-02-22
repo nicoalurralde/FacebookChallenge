@@ -2,7 +2,7 @@
 
 ### Instructions
 
-The project configurations file is `config.properties` at the root of the project. If you are running a different OS from Windows, you should change the ChromeDriver setting to Linux or Mac.
+The project configuration file is `config.properties` (root of the project). If you are running a different OS from Windows, you should change the ChromeDriver setting to Linux or Mac.
 
 ### Main test file
 The only test file is in `\src\test\java\test\FacebookPostVerification.java`
